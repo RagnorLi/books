@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>A Tour of C++ — 核心脉络</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Noto+Sans+SC:wght@300;400;700&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body {
+  background: #07070d;
+  color: #d0ccc0;
+  font-family: 'Noto Sans SC', sans-serif;
+  padding: 52px 32px 80px;
+}
+
+/* ─── HEADER ─── */
+.header {
+  text-align: center;
+  margin-bottom: 52px;
+}
+.header .kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 5px;
+  color: #3a3a5a;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #e8e4d8;
+  letter-spacing: -0.3px;
+}
+.header .sub {
+  margin-top: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #4a4a6a;
+  letter-spacing: 2px;
+}
+
+/* ─── RUNNING EXAMPLE BANNER ─── */
+.vector-banner {
+  max-width: 1100px;
+  margin: 0 auto 40px;
+  background: #0c0c18;
+  border: 1px solid #1c1c30;
+  border-left: 4px solid #ffd166;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.vb-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #ffd166;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.vb-track {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow: hidden;
+}
+.vb-step {
+  flex: 1;
+  text-align: center;
+  padding: 6px 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: #5a5870;
+  border-right: 1px solid #1c1c30;
+  position: relative;
+}
+.vb-step:last-child { border-right: none; }
+.vb-step .code { color: #ffd16699; font-size: 8.5px; margin-top: 3px; }
+.vb-step.active { color: #ffd166; background: #13131e; }
+.vb-step.active .code { color: #ffd166; }
+.vb-arrow { color: #2a2a40; font-size: 11px; padding: 0 2px; }
+
+/* ─── TWO-PART LABEL ─── */
+.part-label {
+  max-width: 1100px;
+  margin: 0 auto 16px;
+  display: flex;
+  gap: 16px;
+}
+.pl {
+  flex: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  padding: 6px 0;
+  border-bottom: 2px solid var(--lc);
+  color: var(--lc);
+}
+
+/* ─── MAIN GRID ─── */
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* ─── LANGUAGE COLUMN ─── */
+.lang-col {
+  width: 380px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ─── LIB SECTION ─── */
+.lib-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ─── CARDS ─── */
+.card {
+  background: #0d0d18;
+  border: 1px solid #1a1a2a;
+  border-radius: 3px;
+  padding: 16px 18px 14px;
+  position: relative;
+  transition: border-color 0.15s;
+}
+.card:hover { border-color: var(--c); }
+.card::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; bottom:0;
+  width:3px;
+  background: var(--c);
+  border-radius:3px 0 0 3px;
+}
+
+.card-hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.card-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--c);
+  letter-spacing: 2px;
+  opacity: 0.8;
+}
+.card-ch {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px;
+  color: #2a2a40;
+  letter-spacing: 1px;
+}
+.card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ece8dc;
+  margin-bottom: 7px;
+  line-height: 1.2;
+}
+.card-desc {
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: #5a5868;
+  margin-bottom: 10px;
+}
+.card-code {
+  background: #090910;
+  border: 1px solid #141420;
+  border-radius: 2px;
+  padding: 8px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  line-height: 1.6;
+  color: #6a6888;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.kw { color: #c678dd; }
+.ty { color: #56b6c2; }
+.fn { color: #61afef; }
+.cm { color: #3d3d52; font-style: italic; }
+.st { color: #98c379; }
+.nu { color: #d19a66; }
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px;
+  padding: 2px 7px;
+  border-radius: 2px;
+  background: #0c0c16;
+  color: var(--c);
+  border: 1px solid var(--c)33;
+}
+
+/* Library grid */
+.lib-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* ─── PARADIGM BAR ─── */
+.paradigm-bar {
+  max-width: 1100px;
+  margin: 20px auto;
+  display: flex;
+  gap: 0;
+  border: 1px solid #1a1a2a;
+  overflow: hidden;
+  border-radius: 3px;
+}
+.pb-seg {
+  flex: 1;
+  padding: 14px 16px;
+  background: #0d0d18;
+  border-right: 1px solid #1a1a2a;
+  text-align: center;
+}
+.pb-seg:last-child { border-right: none; }
+.pb-seg h3 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  color: var(--pc);
+}
+.pb-seg p {
+  font-size: 11px;
+  line-height: 1.7;
+  color: #4a4860;
+}
+.pb-seg p strong { color: #c0bcb0; }
+
+/* ─── SYNTHESIS ─── */
+.synthesis {
+  max-width: 1100px;
+  margin: 0 auto 0;
+  background: #0b0b16;
+  border: 1px solid #1a1a2a;
+  border-top: 3px solid #e06c75;
+  padding: 26px 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+}
+.syn-col {
+  padding: 0 22px;
+  border-right: 1px solid #141422;
+}
+.syn-col:first-child { padding-left: 0; }
+.syn-col:last-child { border-right: none; }
+.syn-col h3 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #e06c75;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.syn-col p {
+  font-size: 11.5px;
+  line-height: 1.85;
+  color: #50505e;
+}
+.syn-col p strong { color: #c0bcb0; }
+
+.footer {
+  text-align: center;
+  margin-top: 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #1e1e2e;
+  letter-spacing: 3px;
+}
+
+/* connector between halves */
+.connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #2a2a40;
+  letter-spacing: 2px;
+  margin: 4px 0;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="kicker">核心脉络图 · Core Map</div>
+  <h1>A Tour of C++  · Third Edition · Bjarne Stroustrup · 2023</h1>
+  <div class="sub">C++20 · 19 CHAPTERS · 2 PARTS · 3 PARADIGMS</div>
+</div>
+
+<!-- Running example: Vector -->
+<div class="vector-banner">
+  <div class="vb-label">贯穿全书<br>的例子</div>
+  <div class="vb-track">
+    <div class="vb-step active">Ch1<div class="code">double v[10]</div></div>
+    <div class="vb-arrow">→</div>
+    <div class="vb-step active">Ch5<div class="code">class Vector{}</div></div>
+    <div class="vb-arrow">→</div>
+    <div class="vb-step active">Ch6<div class="code">copy/move ctor</div></div>
+    <div class="vb-arrow">→</div>
+    <div class="vb-step active">Ch7<div class="code">template&lt;T&gt; Vector</div></div>
+    <div class="vb-arrow">→</div>
+    <div class="vb-step active">Ch8<div class="code">concept Sequence</div></div>
+    <div class="vb-arrow">→</div>
+    <div class="vb-step active">Ch12<div class="code">std::vector&lt;T&gt;</div></div>
+  </div>
+  <div class="vb-label" style="text-align:right">同一个想法<br>六次进化</div>
+</div>
+
+<!-- Part labels -->
+<div class="part-label">
+  <div class="pl" style="--lc:#61afef">PART I · 语言 · Ch1–8</div>
+  <div class="pl" style="--lc:#98c379">PART II · 标准库 · Ch9–18</div>
+</div>
+
+<!-- Main layout -->
+<div class="main">
+
+  <!-- ═══════ LANGUAGE COLUMN ═══════ -->
+  <div class="lang-col">
+
+    <!-- Ch1-4: Foundation -->
+    <div class="card" style="--c:#61afef">
+      <div class="card-hd">
+        <div class="card-num">LAYER 1 · FOUNDATION</div>
+        <div class="card-ch">Ch 1–4</div>
+      </div>
+      <div class="card-title">C++ 的基础设施</div>
+      <div class="card-desc">类型系统、函数、作用域、指针/引用——加上模块化（头文件 vs module）和错误处理（exception + RAII 预备）。这一层是给懂编程但不懂 C++ 的人的快速入门。</div>
+      <div class="card-code"><span class="cm">// Ch1: 一切从这里开始</span>
+<span class="kw">import</span> std;
+<span class="kw">int</span> <span class="fn">main</span>() {
+  std::cout &lt;&lt; <span class="st">"Hello, World!\n"</span>;
+}
+
+<span class="cm">// Ch3: 模块 vs 头文件</span>
+<span class="kw">export module</span> Vector;  <span class="cm">// C++20 module</span>
+<span class="kw">#include</span> <span class="st">&lt;vector&gt;</span>    <span class="cm">// 旧式头文件
+
+// Ch4: 异常</span>
+<span class="kw">throw</span> length_error{<span class="st">"bad size"</span>};
+<span class="kw">try</span> { ... } <span class="kw">catch</span> (exception&amp; e) {...}</div>
+      <div class="tags">
+        <span class="tag">types</span><span class="tag">functions</span><span class="tag">pointers/refs</span>
+        <span class="tag">modules</span><span class="tag">namespaces</span><span class="tag">exceptions</span><span class="tag">invariants</span>
+      </div>
+    </div>
+
+    <!-- Ch5-6: OOP -->
+    <div class="card" style="--c:#c678dd">
+      <div class="card-hd">
+        <div class="card-num">LAYER 2 · OOP ABSTRACTION</div>
+        <div class="card-ch">Ch 5–6</div>
+      </div>
+      <div class="card-title">类：具体 → 抽象 → 层次</div>
+      <div class="card-desc">Ch5 三类型：具体类（值语义）→ 抽象类（纯接口）→ 类层次（多态）。Ch6 解决生命周期：构造/析构/拷贝/移动 的「五法则」以及 RAII 资源管理。</div>
+      <div class="card-code"><span class="cm">// 具体类 (Ch5.2)</span>
+<span class="kw">class</span> <span class="ty">Vector</span> {
+  <span class="kw">double</span>* elem; <span class="kw">int</span> sz;
+<span class="kw">public</span>:
+  <span class="ty">Vector</span>(<span class="kw">int</span> s) : elem{<span class="kw">new double</span>[s]}, sz{s} {}
+  ~<span class="ty">Vector</span>() { <span class="kw">delete</span>[] elem; } <span class="cm">// RAII</span>
+};
+<span class="cm">// 抽象类 (Ch5.3)</span>
+<span class="kw">class</span> <span class="ty">Container</span> {
+<span class="kw">public</span>:
+  <span class="kw">virtual double</span>&amp; <span class="kw">operator</span>[](<span class="kw">int</span>) = <span class="nu">0</span>; <span class="cm">// 纯虚</span>
+  <span class="kw">virtual</span> ~<span class="ty">Container</span>() {}
+};
+<span class="cm">// 移动语义 (Ch6.2)</span>
+<span class="ty">Vector</span>(<span class="ty">Vector</span>&amp;&amp; a);        <span class="cm">// move ctor</span>
+<span class="ty">Vector</span>&amp; <span class="kw">operator</span>=(<span class="ty">Vector</span>&amp;&amp; a); <span class="cm">// move assign</span></div>
+      <div class="tags">
+        <span class="tag">concrete class</span><span class="tag">abstract class</span><span class="tag">virtual</span>
+        <span class="tag">RAII</span><span class="tag">copy/move</span><span class="tag">Rule of Five</span><span class="tag">operator overload</span>
+      </div>
+    </div>
+
+    <!-- Ch7-8: Generic -->
+    <div class="card" style="--c:#e5c07b">
+      <div class="card-hd">
+        <div class="card-num">LAYER 3 · GENERIC PROGRAMMING</div>
+        <div class="card-ch">Ch 7–8</div>
+      </div>
+      <div class="card-title">模板 + Concepts：C++ 最独特的能力</div>
+      <div class="card-desc">Ch7 模板参数化类型和操作（函数对象、lambda、编译期 if）。Ch8 用 Concepts 约束模板，实现真正的泛型编程——编译期鸭子类型，零运行时开销。</div>
+      <div class="card-code"><span class="cm">// Ch7: 参数化类型</span>
+<span class="kw">template</span>&lt;<span class="kw">typename</span> <span class="ty">T</span>&gt;
+<span class="kw">class</span> <span class="ty">Vector</span> { <span class="ty">T</span>* elem; <span class="kw">int</span> sz; ... };
+
+<span class="cm">// Ch7: lambda 作为函数对象</span>
+<span class="fn">sort</span>(v.begin(), v.end(),
+  [](<span class="kw">const</span> <span class="ty">Record</span>&amp; a, <span class="kw">const</span> <span class="ty">Record</span>&amp; b) {
+    <span class="kw">return</span> a.name &lt; b.name;
+  });
+
+<span class="cm">// Ch8: Concept 约束</span>
+<span class="kw">template</span>&lt;<span class="ty">Number</span> <span class="ty">T</span>&gt;        <span class="cm">// 必须满足 Number</span>
+<span class="ty">T</span> <span class="fn">sum</span>(std::<span class="ty">vector</span>&lt;<span class="ty">T</span>&gt; v) { ... }
+
+<span class="cm">// Ch7: 编译期 if</span>
+<span class="kw">if constexpr</span>(is_trivially_copyable_v&lt;<span class="ty">T</span>&gt;)
+  <span class="fn">fast_copy</span>(t); <span class="kw">else</span> <span class="fn">safe_copy</span>(t);</div>
+      <div class="tags">
+        <span class="tag">template</span><span class="tag">function object</span><span class="tag">lambda</span>
+        <span class="tag">concepts</span><span class="tag">variadic template</span><span class="tag">if constexpr</span><span class="tag">compile-time</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════ LIBRARY SECTION ═══════ -->
+  <div class="lib-section">
+
+    <!-- Ch9: Bridge -->
+    <div class="card" style="--c:#98c379">
+      <div class="card-hd">
+        <div class="card-num">BRIDGE · LIBRARY OVERVIEW</div>
+        <div class="card-ch">Ch 9</div>
+      </div>
+      <div class="card-title">语言 → 库：桥接章</div>
+      <div class="card-desc">标准库的组织原则、命名空间规则、如何阅读 <code style="font-family:JetBrains Mono;font-size:10px;color:#98c379">[Cppreference]</code>。后续 9 章每章都是这个地图的一个区域。</div>
+    </div>
+
+    <!-- Library grid -->
+    <div class="lib-grid">
+
+      <!-- Ch10 Strings -->
+      <div class="card" style="--c:#56b6c2">
+        <div class="card-hd">
+          <div class="card-num">STRINGS & REGEX</div>
+          <div class="card-ch">Ch 10</div>
+        </div>
+        <div class="card-title">文本处理</div>
+        <div class="card-code"><span class="ty">string</span> s = <span class="st">"hello"</span>;
+<span class="ty">string_view</span> sv = s;  <span class="cm">// 零拷贝视图</span>
+<span class="ty">regex</span> pat{<span class="st">R"(\d{4}-\d{2})"</span>};
+<span class="fn">regex_search</span>(s, pat);</div>
+        <div class="tags"><span class="tag">string</span><span class="tag">string_view</span><span class="tag">regex</span></div>
+      </div>
+
+      <!-- Ch11 I/O -->
+      <div class="card" style="--c:#56b6c2">
+        <div class="card-hd">
+          <div class="card-num">INPUT / OUTPUT</div>
+          <div class="card-ch">Ch 11</div>
+        </div>
+        <div class="card-title">I/O 流与文件系统</div>
+        <div class="card-code">cout &lt;&lt; <span class="fn">format</span>(<span class="st">"{:.2f}"</span>, <span class="nu">3.14</span>);
+<span class="ty">ifstream</span> f{<span class="st">"data.txt"</span>};
+<span class="cm">// C++17 filesystem</span>
+<span class="kw">for</span> (<span class="kw">auto</span>&amp; p : <span class="fn">directory_iterator</span>(path))</div>
+        <div class="tags"><span class="tag">ostream</span><span class="tag">format</span><span class="tag">filesystem</span></div>
+      </div>
+
+      <!-- Ch12 Containers -->
+      <div class="card" style="--c:#e06c75">
+        <div class="card-hd">
+          <div class="card-num">CONTAINERS</div>
+          <div class="card-ch">Ch 12</div>
+        </div>
+        <div class="card-title">容器家族</div>
+        <div class="card-code">vector&lt;T&gt;  list&lt;T&gt;  deque&lt;T&gt;
+map&lt;K,V&gt;  unordered_map&lt;K,V&gt;
+set&lt;T&gt;    span&lt;T&gt;  array&lt;T,N&gt;
+<span class="cm">// 选择原则：cache 友好 → vector</span></div>
+        <div class="tags"><span class="tag">vector</span><span class="tag">map</span><span class="tag">unordered</span><span class="tag">span</span></div>
+      </div>
+
+      <!-- Ch13 Algorithms -->
+      <div class="card" style="--c:#e06c75">
+        <div class="card-hd">
+          <div class="card-num">ALGORITHMS</div>
+          <div class="card-ch">Ch 13</div>
+        </div>
+        <div class="card-title">算法 + 迭代器</div>
+        <div class="card-code"><span class="fn">sort</span>(v.begin(), v.end());
+<span class="fn">find_if</span>(v.begin(), v.end(), pred);
+<span class="cm">// 并行版本</span>
+<span class="fn">sort</span>(execution::par, v.begin(), v.end());</div>
+        <div class="tags"><span class="tag">iterator</span><span class="tag">predicates</span><span class="tag">parallel</span></div>
+      </div>
+
+      <!-- Ch14 Ranges -->
+      <div class="card" style="--c:#c678dd">
+        <div class="card-hd">
+          <div class="card-num">RANGES · C++20</div>
+          <div class="card-ch">Ch 14</div>
+        </div>
+        <div class="card-title">管道式数据流</div>
+        <div class="card-code"><span class="cm">// C++20 ranges pipeline</span>
+<span class="kw">auto</span> result = v
+  | views::<span class="fn">filter</span>([](int x){ <span class="kw">return</span> x&gt;<span class="nu">0</span>; })
+  | views::<span class="fn">transform</span>([](int x){ <span class="kw">return</span> x*x; });
+<span class="cm">// 惰性求值，不产生中间容器</span></div>
+        <div class="tags"><span class="tag">ranges</span><span class="tag">views</span><span class="tag">pipelines</span><span class="tag">lazy</span></div>
+      </div>
+
+      <!-- Ch15 Pointers -->
+      <div class="card" style="--c:#d19a66">
+        <div class="card-hd">
+          <div class="card-num">POINTERS & MEMORY</div>
+          <div class="card-ch">Ch 15</div>
+        </div>
+        <div class="card-title">智能指针与所有权</div>
+        <div class="card-code"><span class="cm">// 裸指针 → 智能指针</span>
+<span class="kw">auto</span> p = make_unique&lt;<span class="ty">Widget</span>&gt;(args);
+<span class="kw">auto</span> q = make_shared&lt;<span class="ty">Node</span>&gt;(args);
+<span class="cm">// 原则: 所有权 → unique_ptr</span>
+<span class="cm">//       共享  → shared_ptr</span></div>
+        <div class="tags"><span class="tag">unique_ptr</span><span class="tag">shared_ptr</span><span class="tag">ownership</span></div>
+      </div>
+
+      <!-- Ch16 Utilities -->
+      <div class="card" style="--c:#56b6c2">
+        <div class="card-hd">
+          <div class="card-num">UTILITIES</div>
+          <div class="card-ch">Ch 16</div>
+        </div>
+        <div class="card-title">工具箱</div>
+        <div class="card-code">pair&lt;T,U&gt;  tuple&lt;Ts...&gt;
+optional&lt;T&gt;  variant&lt;Ts...&gt;
+<span class="fn">chrono</span>::<span class="fn">system_clock</span>::<span class="fn">now</span>()
+<span class="fn">move</span>(x)  <span class="fn">forward</span>&lt;T&gt;(x)</div>
+        <div class="tags"><span class="tag">optional</span><span class="tag">variant</span><span class="tag">chrono</span><span class="tag">move/forward</span></div>
+      </div>
+
+      <!-- Ch17 Numerics -->
+      <div class="card" style="--c:#98c379">
+        <div class="card-hd">
+          <div class="card-num">NUMERICS</div>
+          <div class="card-ch">Ch 17</div>
+        </div>
+        <div class="card-title">数值计算</div>
+        <div class="card-code">complex&lt;<span class="kw">double</span>&gt; z = {<span class="nu">0</span>, <span class="nu">1</span>};
+mt19937 rng{random_device{}()};
+<span class="ty">valarray</span>&lt;<span class="kw">double</span>&gt; v(n); <span class="cm">// 向量运算</span>
+numeric_limits&lt;<span class="kw">double</span>&gt;::epsilon()</div>
+        <div class="tags"><span class="tag">complex</span><span class="tag">random</span><span class="tag">valarray</span><span class="tag">limits</span></div>
+      </div>
+
+    </div><!-- /lib-grid -->
+
+    <!-- Ch18: Concurrency - full width in lib -->
+    <div class="card" style="--c:#e5c07b">
+      <div class="card-hd">
+        <div class="card-num">CONCURRENCY · C++20 ADDITIONS</div>
+        <div class="card-ch">Ch 18</div>
+      </div>
+      <div class="card-title">并发：线程 → future/async → 协程</div>
+      <div class="card-desc">三个层次的并发抽象：底层（thread + mutex）→ 中层（future/promise/async）→ C++20 新增（jthread + coroutine）。核心原则：能用 async，就不要手写 thread。</div>
+      <div class="card-code"><span class="cm">// 最高层：async (Ch18.5)</span>
+<span class="kw">auto</span> f0 = <span class="fn">async</span>(accum, v0, v0+sz/<span class="nu">4</span>, <span class="nu">0.0</span>);
+<span class="kw">auto</span> f1 = <span class="fn">async</span>(accum, v0+sz/<span class="nu">4</span>, v0+sz/<span class="nu">2</span>, <span class="nu">0.0</span>);
+<span class="kw">return</span> f0.<span class="fn">get</span>() + f1.<span class="fn">get</span>();  <span class="cm">// 自动等待
+
+// C++20: jthread 自动 join (Ch18.5.4)</span>
+<span class="ty">jthread</span> t(find, ss.<span class="fn">get_token</span>(), range, key);
+<span class="cm">// C++20: coroutine (Ch18.6)</span>
+<span class="ty">generator</span>&lt;<span class="kw">int</span>&gt; <span class="fn">fib</span>() { ... <span class="kw">co_yield</span> a+b; ... }</div>
+      <div class="tags">
+        <span class="tag">thread/mutex</span><span class="tag">future/promise</span><span class="tag">async</span>
+        <span class="tag">jthread</span><span class="tag">coroutine</span><span class="tag">co_yield</span><span class="tag">stop_token</span>
+      </div>
+    </div>
+
+  </div><!-- /lib-section -->
+</div><!-- /main -->
+
+<!-- Ch19 + Appendix note -->
+<div class="paradigm-bar" style="max-width:1100px;margin:0 auto 20px;">
+  <div class="pb-seg" style="--pc:#4a4a6a">
+    <h3>Ch 19 · 历史</h3>
+    <p><strong>C++98 → C++11 → C++14 → C++17 → C++20</strong><br>每个版本加了什么，如何与 C 兼容</p>
+  </div>
+  <div class="pb-seg" style="--pc:#4a4a6a">
+    <h3>Appendix · module std</h3>
+    <p>C++20 模块如何替代<strong>#include</strong>，过渡期怎么用</p>
+  </div>
+  <div class="pb-seg" style="--pc:#ffd166">
+    <h3>贯穿全书的设计哲学</h3>
+    <p>每章末尾都有 <strong>Advice</strong> 列表，直接对应 C++ Core Guidelines。书是语言的旅游手册，Guidelines 是居住手册。</p>
+  </div>
+  <div class="pb-seg" style="--pc:#ffd166">
+    <h3>三种编程范式的统一</h3>
+    <p><strong>过程式</strong> (Ch1–4) → <strong>面向对象</strong> (Ch5–6) → <strong>泛型</strong> (Ch7–8) → 三者在标准库中<strong>混用</strong></p>
+  </div>
+</div>
+
+<!-- Synthesis -->
+<div class="synthesis">
+  <div class="syn-col">
+    <h3>全书的叙事逻辑</h3>
+    <p>
+      <strong>Why a type?</strong> → struct / class（Ch2,5）<br>
+      <strong>Why a template?</strong> → 重用代码（Ch7）<br>
+      <strong>Why a concept?</strong> → 约束模板（Ch8）<br>
+      <strong>Why RAII?</strong> → 资源安全（Ch6）<br>
+      <strong>Why ranges?</strong> → 替代裸迭代器（Ch14）<br><br>
+      每个新概念都有「用旧代码表达的痛点」作为动机。
+    </p>
+  </div>
+  <div class="syn-col">
+    <h3>Vector 的六次进化</h3>
+    <p>
+      <strong>Ch1</strong>：double v[10]，C 数组<br>
+      <strong>Ch5</strong>：class Vector，具体类<br>
+      <strong>Ch6</strong>：加 move ctor，零拷贝<br>
+      <strong>Ch7</strong>：template&lt;T&gt; Vector，泛型<br>
+      <strong>Ch8</strong>：concept 约束元素类型<br>
+      <strong>Ch12</strong>：std::vector，工业级<br><br>
+      一条线索串联了「抽象」的全部意义。
+    </p>
+  </div>
+  <div class="syn-col">
+    <h3>这本书不教什么</h3>
+    <p>
+      这是一本 <strong>Tour（观光）</strong>，不是教程。<br>
+      不讲每个 API 的细节 → 去 cppreference<br>
+      不讲最佳实践细节 → 去 C++ Core Guidelines<br>
+      不讲性能调优 → 去 Herb Sutter 的文章<br><br>
+      目标是：<strong>在两天内让有经验的程序员看懂现代 C++ 的全貌</strong>。
+    </p>
+  </div>
+</div>
+
+<div class="footer">A TOUR OF C++ 3E · CORE MAP · FEYNMAN</div>
+
+</body>
+</html>
