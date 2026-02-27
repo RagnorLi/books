@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>CS:APP — 核心脉络</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Noto+Sans+SC:wght@300;400;700&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body {
+  background: #060608;
+  color: #ccc8be;
+  font-family: 'Noto Sans SC', sans-serif;
+  padding: 48px 28px 80px;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.hdr { text-align:center; margin-bottom:44px; }
+.hdr .kicker {
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px; letter-spacing:5px; color:#2e2e48;
+  text-transform:uppercase; margin-bottom:10px;
+}
+.hdr h1 { font-size:22px; font-weight:700; color:#e8e4d8; letter-spacing:-.3px; }
+.hdr .sub {
+  margin-top:6px; font-family:'JetBrains Mono',monospace;
+  font-size:10px; color:#3a3a58; letter-spacing:2px;
+}
+
+/* ── HELLO.C LIFECYCLE BANNER ── */
+.lifecycle {
+  max-width:1120px; margin:0 auto 36px;
+  background:#0a0a14; border:1px solid #181828;
+  border-top:3px solid #e5c07b;
+  padding:16px 20px;
+}
+.lc-label {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  letter-spacing:4px; color:#e5c07b; text-transform:uppercase;
+  margin-bottom:12px;
+}
+.lc-flow {
+  display:flex; align-items:center; gap:0; flex-wrap:nowrap;
+}
+.lc-step {
+  flex:1; text-align:center; padding:8px 6px;
+  background:#0e0e1a; border:1px solid #181828;
+  position:relative;
+}
+.lc-step .title {
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px; color:var(--lc); letter-spacing:1px;
+  margin-bottom:3px;
+}
+.lc-step .detail {
+  font-size:10px; color:#3a3a54; line-height:1.5;
+}
+.lc-step .detail strong { color:#5a5a78; }
+.lc-arr {
+  font-family:'JetBrains Mono',monospace;
+  font-size:14px; color:#1e1e30; padding:0 4px; flex-shrink:0;
+}
+.lc-note {
+  margin-top:10px; font-size:10.5px; color:#3a3a52;
+  font-family:'JetBrains Mono',monospace; letter-spacing:1px;
+}
+
+/* ── PART LABELS ── */
+.parts {
+  max-width:1120px; margin:0 auto 14px;
+  display:grid; grid-template-columns:2fr 1.1fr 1fr;
+  gap:10px;
+}
+.part-label {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  letter-spacing:3px; text-transform:uppercase; padding:6px 0;
+  border-bottom:2px solid var(--pc); color:var(--pc);
+}
+
+/* ── THREE-COLUMN LAYOUT ── */
+.layout {
+  max-width:1120px; margin:0 auto;
+  display:grid; grid-template-columns:2fr 1.1fr 1fr;
+  gap:10px; align-items:start;
+}
+
+/* ── CARD ── */
+.card {
+  background:#0c0c16; border:1px solid #181826;
+  border-radius:2px; padding:15px 17px 13px;
+  position:relative; transition:border-color .15s;
+  margin-bottom:10px;
+}
+.card:last-child { margin-bottom:0; }
+.card:hover { border-color:var(--c); }
+.card::before {
+  content:''; position:absolute;
+  top:0; left:0; bottom:0; width:3px;
+  background:var(--c); border-radius:2px 0 0 2px;
+}
+.card-hd {
+  display:flex; justify-content:space-between;
+  align-items:flex-start; margin-bottom:7px;
+}
+.card-num {
+  font-family:'JetBrains Mono',monospace; font-size:8.5px;
+  color:var(--c); letter-spacing:2px; opacity:.85;
+}
+.card-ch {
+  font-family:'JetBrains Mono',monospace; font-size:8px;
+  color:#252535; letter-spacing:1px;
+}
+.card-title {
+  font-size:14px; font-weight:700;
+  color:#ece8dc; margin-bottom:6px; line-height:1.2;
+}
+.card-desc {
+  font-size:11px; line-height:1.75;
+  color:#525060; margin-bottom:9px;
+}
+.card-insight {
+  font-size:11px; line-height:1.7; color:#3a3a52;
+  border-left:2px solid var(--c)44; padding-left:8px;
+  margin-bottom:9px; font-style:italic;
+}
+.card-insight strong { color:var(--c); opacity:.8; font-style:normal; }
+
+/* code block */
+.cblock {
+  background:#080810; border:1px solid #121220;
+  border-radius:2px; padding:7px 9px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px; line-height:1.65; color:#585870;
+  margin-bottom:8px; overflow:hidden;
+}
+.kw{color:#c678dd} .ty{color:#56b6c2} .fn{color:#61afef}
+.cm{color:#2e2e42;font-style:italic} .st{color:#98c379}
+.nu{color:#d19a66} .reg{color:#e5c07b} .addr{color:#e06c75}
+
+.tags {
+  display:flex; flex-wrap:wrap; gap:4px;
+}
+.tag {
+  font-family:'JetBrains Mono',monospace; font-size:8px;
+  padding:2px 6px; border-radius:2px;
+  background:#0a0a14; color:var(--c);
+  border:1px solid var(--c)2e;
+}
+
+/* ── CONNECTOR ARROWS ── */
+.conn {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  color:#1e1e2e; letter-spacing:2px; text-align:center;
+  padding:3px 0; margin-bottom:10px;
+}
+
+/* ── BOTTOM SYNTHESIS ── */
+.synth {
+  max-width:1120px; margin:14px auto 0;
+  background:#090912; border:1px solid #181826;
+  border-top:3px solid #e06c75;
+  display:grid; grid-template-columns:1fr 1fr 1fr 1fr;
+  gap:0;
+}
+.sc {
+  padding:20px 22px; border-right:1px solid #121220;
+}
+.sc:last-child { border-right:none; }
+.sc h3 {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  letter-spacing:3px; color:#e06c75; text-transform:uppercase;
+  margin-bottom:10px;
+}
+.sc p {
+  font-size:11px; line-height:1.85; color:#44445a;
+}
+.sc p strong { color:#b0aca0; }
+
+.footer {
+  text-align:center; margin-top:20px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px; color:#181826; letter-spacing:3px;
+}
+
+/* vertical stack helper */
+.col { display:flex; flex-direction:column; }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="kicker">核心脉络图 · Core Map</div>
+  <h1>Computer Systems: A Programmer's Perspective &nbsp;·&nbsp; 3rd Edition</h1>
+  <div class="sub">Bryant &amp; O'Hallaron · CMU 15-213 · 12 CHAPTERS · 3 PARTS · 1 RUNNING EXAMPLE</div>
+</div>
+
+<!-- hello.c lifecycle -->
+<div class="lifecycle">
+  <div class="lc-label">贯穿全书的线索 — hello.c 的一生</div>
+  <div class="lc-flow">
+    <div class="lc-step" style="--lc:#e5c07b">
+      <div class="title">SOURCE</div>
+      <div class="detail"><strong>hello.c</strong><br>人类可读文本</div>
+    </div>
+    <div class="lc-arr">→</div>
+    <div class="lc-step" style="--lc:#61afef">
+      <div class="title">Ch2 · BITS</div>
+      <div class="detail"><strong>数据</strong>如何<br>编码成位</div>
+    </div>
+    <div class="lc-arr">→</div>
+    <div class="lc-step" style="--lc:#c678dd">
+      <div class="title">Ch3 · ASM</div>
+      <div class="detail"><strong>C</strong>如何变成<br>x86-64指令</div>
+    </div>
+    <div class="lc-arr">→</div>
+    <div class="lc-step" style="--lc:#e06c75">
+      <div class="title">Ch4 · CPU</div>
+      <div class="detail">指令如何被<br><strong>处理器</strong>执行</div>
+    </div>
+    <div class="lc-arr">→</div>
+    <div class="lc-step" style="--lc:#98c379">
+      <div class="title">Ch5-6 · PERF</div>
+      <div class="detail">如何写出<br><strong>快</strong>的程序</div>
+    </div>
+    <div class="lc-arr">→</div>
+    <div class="lc-step" style="--lc:#56b6c2">
+      <div class="title">Ch7 · LINK</div>
+      <div class="detail">多文件如何<br><strong>链接</strong>成可执行</div>
+    </div>
+    <div class="lc-arr">→</div>
+    <div class="lc-step" style="--lc:#d19a66">
+      <div class="title">Ch8 · ECF</div>
+      <div class="detail">OS如何<br><strong>调度</strong>进程</div>
+    </div>
+    <div class="lc-arr">→</div>
+    <div class="lc-step" style="--lc:#c678dd">
+      <div class="title">Ch9 · VM</div>
+      <div class="detail">内存地址<br>如何<strong>映射</strong></div>
+    </div>
+    <div class="lc-arr">→</div>
+    <div class="lc-step" style="--lc:#e5c07b">
+      <div class="title">Ch10-12 · SYS</div>
+      <div class="detail">与外部世界<br><strong>通信</strong></div>
+    </div>
+  </div>
+  <div class="lc-note">全书核心命题：<strong>一个程序员需要了解多少系统知识，才能写出正确、高效、安全的程序？</strong></div>
+</div>
+
+<!-- Part labels -->
+<div class="parts">
+  <div class="part-label" style="--pc:#61afef">PART I · 程序的结构与执行 · Ch1–6</div>
+  <div class="part-label" style="--pc:#98c379">PART II · 程序在系统上运行 · Ch7–9</div>
+  <div class="part-label" style="--pc:#d19a66">PART III · 程序间通信 · Ch10–12</div>
+</div>
+
+<!-- Main 3-column layout -->
+<div class="layout">
+
+  <!-- ═══ COLUMN 1: PART I ═══ -->
+  <div class="col">
+
+    <!-- Ch1 Tour -->
+    <div class="card" style="--c:#e5c07b">
+      <div class="card-hd">
+        <div class="card-num">CH 1 · TOUR</div>
+        <div class="card-ch">全书地图</div>
+      </div>
+      <div class="card-title">计算机系统的鸟瞰图</div>
+      <div class="card-desc">用 hello.c 的一生串联所有概念：编译→链接→加载→执行→I/O。先给你看全景，后面12章是每个景点的特写。</div>
+      <div class="cblock"><span class="cm">// 这一行代码背后有多少层？</span>
+printf(<span class="st">"hello, world\n"</span>);
+<span class="cm">// → 编译器翻译 → 汇编 → 链接器
+// → 加载器 → OS系统调用
+// → 设备驱动 → 屏幕像素</span></div>
+      <div class="card-insight"><strong>Amdahl 定律</strong>：加速一个部件的效果取决于它占总时间的比例。优化 10% 的代码没有意义。</div>
+      <div class="tags"><span class="tag">abstraction layers</span><span class="tag">Amdahl's Law</span><span class="tag">concurrency</span></div>
+    </div>
+
+    <!-- Ch2 Data -->
+    <div class="card" style="--c:#61afef">
+      <div class="card-hd">
+        <div class="card-num">CH 2 · DATA REPRESENTATION</div>
+        <div class="card-ch">信息就是位+上下文</div>
+      </div>
+      <div class="card-title">数字在机器里究竟是什么</div>
+      <div class="card-desc">整数、浮点数、字节序——不理解这层，你写的代码可能在边界条件下爆炸。经典陷阱：有符号与无符号转换、溢出、浮点误差。</div>
+      <div class="cblock"><span class="cm">/* 为什么这段代码会死循环？ */</span>
+<span class="kw">unsigned</span> i;
+<span class="kw">for</span> (i = n-<span class="nu">1</span>; i >= <span class="nu">0</span>; i--)  <span class="cm">// 永远 >= 0！</span>
+  a[i] = ...;
+
+<span class="cm">/* 溢出：两正数之和可为负 */</span>
+<span class="kw">int</span> x = INT_MAX, y = <span class="nu">1</span>;
+x + y  <span class="cm">// = -2147483648 ！</span>
+
+<span class="cm">/* IEEE 754：0.1+0.2 ≠ 0.3 */</span>
+<span class="nu">0.1</span> + <span class="nu">0.2</span> == <span class="nu">0.3</span>  <span class="cm">// → false</span></div>
+      <div class="tags"><span class="tag">two's complement</span><span class="tag">unsigned/signed</span><span class="tag">IEEE 754</span><span class="tag">overflow</span><span class="tag">endianness</span></div>
+    </div>
+
+    <!-- Ch3 Machine Code -->
+    <div class="card" style="--c:#c678dd">
+      <div class="card-hd">
+        <div class="card-num">CH 3 · MACHINE CODE</div>
+        <div class="card-ch">C → x86-64 汇编</div>
+      </div>
+      <div class="card-title">编译器如何翻译 C 程序</div>
+      <div class="card-desc">不要求手写汇编，要求读懂汇编。目标：理解指针、数组、结构体、函数调用栈在机器层面的真实样子。附赠：理解 buffer overflow 攻击的根源。</div>
+      <div class="cblock"><span class="cm"># C函数调用 → 栈帧</span>
+<span class="fn">sum</span>:
+  <span class="reg">pushq</span>  <span class="addr">%rbp</span>          <span class="cm"># 保存旧帧指针</span>
+  <span class="reg">movq</span>   <span class="addr">%rsp, %rbp</span>   <span class="cm"># 建立新帧</span>
+  <span class="reg">movl</span>   <span class="addr">%edi, -4(%rbp)</span> <span class="cm"># 参数 x</span>
+  <span class="reg">movl</span>   <span class="addr">%esi, -8(%rbp)</span> <span class="cm"># 参数 y</span>
+
+<span class="cm"># buffer overflow: gets() 不检查边界</span>
+<span class="cm"># → 攻击者覆盖返回地址 → 任意代码执行</span>
+<span class="cm"># 防御: canary / ASLR / NX bit</span></div>
+      <div class="card-insight"><strong>关键洞见</strong>：指针就是地址，数组就是连续内存，C 不检查边界——这三个事实合在一起造就了最常见的安全漏洞。</div>
+      <div class="tags"><span class="tag">x86-64</span><span class="tag">registers</span><span class="tag">stack frame</span><span class="tag">call convention</span><span class="tag">buffer overflow</span><span class="tag">ASLR</span></div>
+    </div>
+
+    <!-- Ch4 Processor -->
+    <div class="card" style="--c:#e06c75">
+      <div class="card-hd">
+        <div class="card-num">CH 4 · PROCESSOR ARCHITECTURE</div>
+        <div class="card-ch">可选深潜章节</div>
+      </div>
+      <div class="card-title">CPU 怎么执行指令</div>
+      <div class="card-desc">自制简化版 ISA（Y86-64），从单周期设计推进到5级流水线。理解 hazard（数据冒险、控制冒险）。这章是为 Ch5 性能优化铺路的硬件模型。</div>
+      <div class="cblock"><span class="cm"># 5级流水线</span>
+Fetch → Decode → Execute → Memory → Writeback
+<span class="cm">#        ↑ 每个时钟周期，5条指令同时在管道中
+#
+# 数据冒险：下一条指令依赖上一条的结果
+# 控制冒险：分支预测错误 → 清空流水线
+# 解决：forwarding / stall / branch prediction</span></div>
+      <div class="tags"><span class="tag">Y86-64</span><span class="tag">pipeline</span><span class="tag">hazards</span><span class="tag">forwarding</span><span class="tag">branch prediction</span></div>
+    </div>
+
+    <!-- Ch5 Performance -->
+    <div class="card" style="--c:#98c379">
+      <div class="card-hd">
+        <div class="card-num">CH 5 · PERFORMANCE</div>
+        <div class="card-ch">写出快代码</div>
+      </div>
+      <div class="card-title">如何让编译器生成高效机器码</div>
+      <div class="card-desc">现代处理器是乱序执行的超标量机器。性能极限由「关键路径」决定。学会消除循环中的低效操作、利用指令级并行、循环展开。</div>
+      <div class="cblock"><span class="cm">/* 原始代码：每次迭代读 v.size() */</span>
+<span class="kw">for</span> (i = <span class="nu">0</span>; i < vec_length(v); i++) ...
+
+<span class="cm">/* 优化1：消除函数调用 */</span>
+len = vec_length(v);
+<span class="kw">for</span> (i = <span class="nu">0</span>; i < len; i++) ...
+
+<span class="cm">/* 优化2：循环展开 + 多累加器
+   → 打破循环依赖链 → 利用 ILP */</span>
+<span class="kw">for</span> (i = <span class="nu">0</span>; i < len-<span class="nu">1</span>; i+=<span class="nu">2</span>) {
+  acc0 = acc0 OP d[i];
+  acc1 = acc1 OP d[i+<span class="nu">1</span>];
+}</div>
+      <div class="card-insight"><strong>CPE（Cycles Per Element）</strong>是衡量循环性能的基本单位。瓶颈是延迟限制还是吞吐量限制？</div>
+      <div class="tags"><span class="tag">CPE</span><span class="tag">loop unrolling</span><span class="tag">ILP</span><span class="tag">out-of-order</span><span class="tag">profiling</span></div>
+    </div>
+
+    <!-- Ch6 Memory Hierarchy -->
+    <div class="card" style="--c:#56b6c2">
+      <div class="card-hd">
+        <div class="card-num">CH 6 · MEMORY HIERARCHY</div>
+        <div class="card-ch">写出 cache 友好的代码</div>
+      </div>
+      <div class="card-title">存储层次：为什么局部性如此重要</div>
+      <div class="card-desc">SRAM cache → DRAM → SSD → 磁盘，速度差 10 个数量级。程序的局部性（时间/空间）决定了 cache 命中率，进而决定性能。Memory Mountain 是理解这一切的可视化工具。</div>
+      <div class="cblock"><span class="cm">/* 列优先 vs 行优先：矩阵遍历 */</span>
+<span class="cm">/* 差的访问模式（列优先，cache 不友好）*/</span>
+<span class="kw">for</span> (j = <span class="nu">0</span>; j < N; j++)       <span class="cm">// 外循环列</span>
+  <span class="kw">for</span> (i = <span class="nu">0</span>; i < N; i++)     <span class="cm">// 内循环行</span>
+    sum += A[i][j];            <span class="cm">// 跨步访问!</span>
+
+<span class="cm">/* 好的访问模式（行优先，空间局部性）*/</span>
+<span class="kw">for</span> (i = <span class="nu">0</span>; i < N; i++)       <span class="cm">// 外循环行</span>
+  <span class="kw">for</span> (j = <span class="nu">0</span>; j < N; j++)     <span class="cm">// 内循环列</span>
+    sum += A[i][j];            <span class="cm">// 顺序访问 ✓</span></div>
+      <div class="tags"><span class="tag">SRAM/DRAM</span><span class="tag">cache lines</span><span class="tag">temporal locality</span><span class="tag">spatial locality</span><span class="tag">miss penalty</span><span class="tag">memory mountain</span></div>
+    </div>
+
+  </div><!-- /col1 -->
+
+  <!-- ═══ COLUMN 2: PART II ═══ -->
+  <div class="col">
+
+    <!-- Ch7 Linking -->
+    <div class="card" style="--c:#98c379">
+      <div class="card-hd">
+        <div class="card-num">CH 7 · LINKING</div>
+        <div class="card-ch">最被忽视的章节</div>
+      </div>
+      <div class="card-title">链接器做了什么</div>
+      <div class="card-desc">为什么大型项目里的神秘报错往往来自链接？符号解析、重定位、静态库与动态库、GOT/PLT、库插桩。</div>
+      <div class="cblock"><span class="cm"># 编译 → 链接 → 可执行</span>
+gcc -c foo.c → foo.o
+gcc -c bar.c → bar.o
+gcc foo.o bar.o -o prog
+<span class="cm"># 链接器任务：
+# 1. 符号解析：找到每个引用的定义
+# 2. 重定位：把相对地址填成绝对地址
+# 动态链接：运行时加载 .so
+# PIC：位置无关代码 → GOT/PLT 间接跳转</span></div>
+      <div class="card-insight"><strong>为什么要学链接</strong>：你遇到的「undefined reference」「multiple definition」都来自这里。</div>
+      <div class="tags"><span class="tag">symbol resolution</span><span class="tag">relocation</span><span class="tag">static lib</span><span class="tag">shared lib</span><span class="tag">PIC</span><span class="tag">GOT/PLT</span></div>
+    </div>
+
+    <!-- Ch8 ECF -->
+    <div class="card" style="--c:#d19a66">
+      <div class="card-hd">
+        <div class="card-num">CH 8 · EXCEPTIONAL CONTROL FLOW</div>
+        <div class="card-ch">超越单程序视角</div>
+      </div>
+      <div class="card-title">进程、信号与异常控制流</div>
+      <div class="card-desc">程序不是孤立运行的。ECF 是OS控制程序的方式：硬件异常→中断→进程切换→Unix信号。理解 fork/exec/wait，写出正确的 shell。</div>
+      <div class="cblock"><span class="cm">/* fork: 父子进程同时运行 */</span>
+pid_t pid = <span class="fn">fork</span>();
+<span class="kw">if</span> (pid == <span class="nu">0</span>) {
+  <span class="cm">/* 子进程 */</span>
+  <span class="fn">execve</span>(<span class="st">"/bin/ls"</span>, argv, envp);
+} <span class="kw">else</span> {
+  <span class="cm">/* 父进程等待子进程 */</span>
+  <span class="fn">waitpid</span>(pid, &status, <span class="nu">0</span>);
+}
+<span class="cm">/* 信号处理：异步事件的通知机制
+   SIGINT / SIGCHLD / SIGSEGV
+   注意：信号处理函数必须是 async-signal-safe */</span></div>
+      <div class="tags"><span class="tag">exceptions</span><span class="tag">interrupts</span><span class="tag">process</span><span class="tag">fork/exec</span><span class="tag">signals</span><span class="tag">context switch</span></div>
+    </div>
+
+    <!-- Ch9 Virtual Memory -->
+    <div class="card" style="--c:#c678dd">
+      <div class="card-hd">
+        <div class="card-num">CH 9 · VIRTUAL MEMORY</div>
+        <div class="card-ch">全书最核心的硬件-软件交汇</div>
+      </div>
+      <div class="card-title">虚拟内存：三种工具合一</div>
+      <div class="card-desc">VM 同时充当三种角色：① DRAM 的缓存（页表 + TLB）；② 进程隔离的工具（每个进程独立地址空间）；③ 内存保护的工具。malloc 的实现也在这章。</div>
+      <div class="cblock"><span class="cm"># 虚拟地址 → 物理地址的完整路径</span>
+VA → [TLB 查找] → page table entry
+   → [Cache 查找] → DRAM
+   → 返回数据
+
+<span class="cm">/* malloc 内部：隐式空闲链表 */</span>
+<span class="cm">/* Header | Payload | Footer */</span>
+<span class="cm">/* 分配策略：first fit / best fit
+   碎片化问题：内部碎片 + 外部碎片
+   边界标记合并相邻空闲块 */</span>
+
+<span class="cm">/* mmap: 文件映射到虚拟地址空间
+   → fork COW / 共享库 / 自定义 malloc */</span></div>
+      <div class="card-insight">VM 是整本书硬件-软件界面最精华的体现：一个概念同时解释了进程隔离、共享库、内存映射文件和 malloc 的工作原理。</div>
+      <div class="tags"><span class="tag">page table</span><span class="tag">TLB</span><span class="tag">demand paging</span><span class="tag">mmap</span><span class="tag">malloc/free</span><span class="tag">fragmentation</span><span class="tag">COW</span></div>
+    </div>
+
+  </div><!-- /col2 -->
+
+  <!-- ═══ COLUMN 3: PART III ═══ -->
+  <div class="col">
+
+    <!-- Ch10 I/O -->
+    <div class="card" style="--c:#d19a66">
+      <div class="card-hd">
+        <div class="card-num">CH 10 · SYSTEM I/O</div>
+        <div class="card-ch">接下来两章的基础</div>
+      </div>
+      <div class="card-title">Unix I/O 的基本模型</div>
+      <div class="card-desc">文件描述符、open/read/write/close、文件共享、I/O 重定向。标准库 stdio 的局限性——网络编程时不能用，要用 Unix I/O。</div>
+      <div class="cblock"><span class="cm">/* 文件描述符 = 小整数
+   0=stdin 1=stdout 2=stderr */</span>
+<span class="kw">int</span> fd = <span class="fn">open</span>(<span class="st">"data.txt"</span>, O_RDONLY);
+<span class="fn">read</span>(fd, buf, n);
+<span class="fn">close</span>(fd);
+<span class="cm">/* I/O重定向: dup2(fd, STDOUT_FILENO)
+   shell 的 ">" 重定向就是这样实现的 */</span></div>
+      <div class="tags"><span class="tag">file descriptor</span><span class="tag">open/read/write</span><span class="tag">dup2</span><span class="tag">short counts</span></div>
+    </div>
+
+    <!-- Ch11 Network -->
+    <div class="card" style="--c:#56b6c2">
+      <div class="card-hd">
+        <div class="card-num">CH 11 · NETWORK</div>
+        <div class="card-ch">写一个 Web 服务器</div>
+      </div>
+      <div class="card-title">网络编程：套接字接口</div>
+      <div class="card-desc">client-server 模型 → IP/DNS → socket API → 实现一个 Tiny Web Server（能处理 HTTP GET，支持 CGI 动态内容）。</div>
+      <div class="cblock"><span class="cm">/* 服务器端最小骨架 */</span>
+listenfd = <span class="fn">Open_listenfd</span>(port);
+<span class="kw">while</span> (<span class="nu">1</span>) {
+  connfd = <span class="fn">Accept</span>(listenfd, ...);
+  <span class="fn">doit</span>(connfd);   <span class="cm">// 处理 HTTP 请求</span>
+  <span class="fn">Close</span>(connfd);
+}
+<span class="cm">/* 问题：一次只能服务一个客户端
+   → 引出下一章的并发 */</span></div>
+      <div class="tags"><span class="tag">TCP/IP</span><span class="tag">socket</span><span class="tag">HTTP</span><span class="tag">CGI</span><span class="tag">getaddrinfo</span></div>
+    </div>
+
+    <!-- Ch12 Concurrency -->
+    <div class="card" style="--c:#e5c07b">
+      <div class="card-hd">
+        <div class="card-num">CH 12 · CONCURRENCY</div>
+        <div class="card-ch">全书压轴</div>
+      </div>
+      <div class="card-title">并发：进程 / I/O多路复用 / 线程</div>
+      <div class="card-desc">三种并发模型对比。重点是线程 + semaphore 同步。信号量 P/V 操作、进度图、生产者-消费者、读者-写者。最后：多核并行编程。</div>
+      <div class="cblock"><span class="cm">/* 信号量：解决竞争条件 */</span>
+sem_t mutex;
+<span class="fn">Sem_init</span>(&mutex, <span class="nu">0</span>, <span class="nu">1</span>);
+
+<span class="kw">void</span> *<span class="fn">thread</span>(<span class="kw">void</span> *vargp) {
+  <span class="fn">P</span>(&mutex);         <span class="cm">// lock</span>
+  cnt++;             <span class="cm">// 临界区</span>
+  <span class="fn">V</span>(&mutex);         <span class="cm">// unlock</span>
+}
+<span class="cm">/* 死锁：两个线程各持对方需要的锁
+   条件：互斥+持有等待+非抢占+循环等待
+   预防：加锁顺序一致 */</span></div>
+      <div class="card-insight">这章把全书所有知识点汇聚：ECF（进程/信号）+ VM（共享内存）+ I/O + 性能（多核并行）。</div>
+      <div class="tags"><span class="tag">pthreads</span><span class="tag">semaphore P/V</span><span class="tag">race condition</span><span class="tag">deadlock</span><span class="tag">thread-safe</span><span class="tag">parallelism</span></div>
+    </div>
+
+  </div><!-- /col3 -->
+
+</div><!-- /layout -->
+
+<!-- Synthesis -->
+<div class="synth">
+  <div class="sc">
+    <h3>全书叙事逻辑</h3>
+    <p>
+      <strong>从具体到抽象</strong>：从一行 C 代码出发，逐层揭开每一个抽象背后的真实机制——<br><br>
+      数字 → 位序列<br>
+      C程序 → 机器指令<br>
+      内存 → 缓存+DRAM层次<br>
+      文件 → 文件描述符<br>
+      程序 → 进程+虚拟地址空间
+    </p>
+  </div>
+  <div class="sc">
+    <h3>三条主题线</h3>
+    <p>
+      <strong>正确性</strong>（Ch2, Ch3, Ch8）<br>
+      溢出、缓冲区溢出、信号安全性——这些是 bug 的根源<br><br>
+      <strong>性能</strong>（Ch5, Ch6, Ch12）<br>
+      ILP、cache 局部性、多核并行<br><br>
+      <strong>安全性</strong>（Ch3, Ch9）<br>
+      buffer overflow、ASLR、内存隔离
+    </p>
+  </div>
+  <div class="sc">
+    <h3>三个关键节点</h3>
+    <p>
+      <strong>Ch3 汇编</strong>：最难啃，但突破后你能理解任何安全漏洞<br><br>
+      <strong>Ch9 虚拟内存</strong>：最抽象，但理解后能串联 OS、malloc、链接器、共享库<br><br>
+      <strong>Ch12 并发</strong>：综合压轴，把前面所有知识用到实际的服务器设计中
+    </p>
+  </div>
+  <div class="sc">
+    <h3>配套实验（Labs）</h3>
+    <p>
+      <strong>Data Lab</strong>：位运算实现数学<br>
+      <strong>Bomb Lab</strong>：逆向工程拆炸弹<br>
+      <strong>Buffer Overflow Lab</strong>：实践攻击与防御<br>
+      <strong>Cache Lab</strong>：矩阵转置优化<br>
+      <strong>Shell Lab</strong>：实现 Unix shell<br>
+      <strong>Malloc Lab</strong>：实现堆分配器<br>
+      <strong>Proxy Lab</strong>：并发 Web 代理
+    </p>
+  </div>
+</div>
+
+<div class="footer">CS:APP 3E · CORE MAP · FEYNMAN · CMU 15-213</div>
+
+</body>
+</html>
